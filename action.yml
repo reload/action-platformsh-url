@@ -1,0 +1,58 @@
+name: "Platform.sh - Get Environment URL"
+description: "Detecting if PlatformSH is building an environment, and returning the URL when it's done deploying."
+
+inputs:
+  PLATFORMSH_KEY:
+    required: true
+    type: string
+  PLATFORMSH_ID:
+    required: true
+    type: string
+  ENVIRONMENT_NAME:
+    required: false
+    type: string
+    default: "pr-${{ github.event.pull_request.number }}"
+
+outputs:
+  url:
+    description: "The ready-to-connect URL"
+    value: ${{ steps.platformsh_url.outputs.url }}
+
+runs:
+  using: "composite"
+  steps:
+    - name: Setup PHP and disable opcache
+      uses: shivammathur/setup-php@v2
+      with:
+        php-version: "8.1"
+        extensions: none, curl, json, mbstring, pcre, and phar
+    - name: Get PlatformSH URL
+      shell: bash
+      id: platformsh_url
+      run: |
+        export PLATFORMSH_CLI_NO_INTERACTION=1;
+        export PLATFORM_PROJECT=${{ inputs.PLATFORMSH_ID }};
+        export PLATFORM_BRANCH=${{ inputs.ENVIRONMENT_NAME }};
+        export PLATFORMSH_CLI_TOKEN=${{ inputs.PLATFORMSH_KEY }};
+
+        curl -fsS https://platform.sh/cli/installer | php
+        echo "${{ inputs.ENVIRONMENT_NAME }}"
+        URL=$(~/.platformsh/bin/platform env:url -1 --pipe -n)
+        echo "::set-output name=url::$(echo $URL)"
+        while [ true ]; do \
+          STATUS=$(~/.platformsh/bin/platform env:info status); \
+          echo "Environment Status:"; \
+          if [ $STATUS = "dirty" ]; then echo "deploying"; else echo "$STATUS"; echo ""; fi; \
+          if [ $STATUS != "dirty" ]; then break; fi; \
+          sleep 5; \
+        done \
+
+        if [ $STATUS = "active" ]; then \
+          echo "$URL is active - you can use it as $ {{ steps.platformsh_url.outputs.url }}"; \
+        elif [ $STATUS = "inactive" ]; then \
+          echo "PlatformSH reports that the environment is not active. This might be because you have run out of available environment slots. Try to run 'platform env:activate -e ${{ inputs.ENVIRONMENT_NAME }} -p ${{ inputs.PLATFORMSH_ID }}'"; \
+          exit 2; \
+        else \
+          echo "PlatformSH reports a problem with the environment. The message:"; \
+          echo "$STATUS" exit 2; \
+        fi
