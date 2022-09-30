@@ -17,4 +17,4 @@ Detecting if PlatformSH is building an environment, and returning the URL when i
 
 ## Using the action
 
-Example setup: https://github.com/reload/workflow-platformsh-deploy-test/blob/main/.github/workflows/platformsh-deploy-test.yml
+Example setup: https://github.com/reload/workflow-platformsh-deploy-status/blob/main/.github/workflows/platformsh-deploy-test.yml
