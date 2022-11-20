@@ -1,14 +1,24 @@
 name: "Platform.sh - Get Environment URL"
 description: "Detecting if PlatformSH is building an environment, and returning the URL when it's done deploying."
+icon: "download-cloud"
+color: blue
 
 inputs:
   PLATFORMSH_KEY:
+    description: "API key for connecting to Platform.sh"
     required: true
     type: string
   PLATFORMSH_ID:
+    description: "ID for the Platform.sh project."
     required: true
     type: string
+  DEPLOYMENT_TYPE_EXCLUDES
+    description: "Types of deployments NOT to wait for. Default: environment.cron - See types here: https://docs.platform.sh/integrations/activity/reference.html#type"
+    required: true
+    type: string
+    default: "environment.cron"
   ENVIRONMENT_NAME:
+    description "Which environment to check against - defaults to 'pr-[PR-number]'"
     required: false
     type: string
     default: "pr-${{ github.event.pull_request.number }}"
@@ -37,22 +47,35 @@ runs:
 
         curl -fsS https://platform.sh/cli/installer | php
         echo "${{ inputs.ENVIRONMENT_NAME }}"
-        URL=$(~/.platformsh/bin/platform env:url -1 --pipe -n)
-        echo "::set-output name=url::$(echo $URL)"
-        while [ true ]; do \
-          STATUS=$(~/.platformsh/bin/platform env:info status); \
-          echo "Environment Status:"; \
-          if [ $STATUS = "dirty" ]; then echo "deploying"; else echo "$STATUS"; echo ""; fi; \
-          if [ $STATUS != "dirty" ]; then break; fi; \
+
+        alias platform='~/.platformsh/bin/platform'
+
+        SUCCESS=0
+        TRIES=0
+
+        while [ $TRIES -le 100 ]; do \
+          ACTS=$(platform activities --no-interaction --columns=created,description,state --incomplete  --exclude-type=${{ inputs.DEPLOYMENT_TYPE_EXCLUDES }}); \
+
+          if [ $ACTS = "No activities found" ]; then SUCCESS=1 break; fi; \
+
+          echo "$ACTS"; \
+
           sleep 5; \
         done \
 
-        if [ $STATUS = "active" ]; then \
-          echo "$URL is active - you can use it as $ {{ steps.platformsh_url.outputs.url }}"; \
-        elif [ $STATUS = "inactive" ]; then \
+        STATUS=$(platform env:info status)
+        STATUS_COMMAND_SUCCESS=$($?)
+
+        if [ $STATUS = "inactive" ]; then \
           echo "PlatformSH reports that the environment is not active. This might be because you have run out of available environment slots. Try to run 'platform env:activate -e ${{ inputs.ENVIRONMENT_NAME }} -p ${{ inputs.PLATFORMSH_ID }}'"; \
           exit 2; \
-        else \
+        elif [ $STATUS_COMMAND_SUCCESS -ne 0 ] \
           echo "PlatformSH reports a problem with the environment. The message:"; \
-          echo "$STATUS" exit 2; \
+          ENV_STATUS=$(platform env:info); \
+          echo "$ENV_STATUS" exit 2; \
         fi
+
+        URL=$(platform env:url -1 --pipe -n)
+        echo "::set-output name=url::$(echo $URL)"
+
+        echo "$URL is active - you can use it as $ {{ [..].outputs.url }}"; \
