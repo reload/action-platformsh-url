@@ -12,7 +12,7 @@ inputs:
     description: "ID for the Platform.sh project."
     required: true
     type: string
-  DEPLOYMENT_TYPE_EXCLUDES
+  DEPLOYMENT_TYPE_EXCLUDES:
     description: "Types of deployments NOT to wait for. Default: environment.cron - See types here: https://docs.platform.sh/integrations/activity/reference.html#type"
     required: true
     type: string
