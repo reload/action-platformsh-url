@@ -28,7 +28,3 @@ https://docs.github.com/en/actions/security-guides/encrypted-secrets#creating-en
 - `PLATFORMSH_KEY`: Your Platform.SH token.
 	- Login to [console.platform.sh](https://console.platform.sh)
 	- "My Profile" > "API Tokens" > "Create API token"
-
-## Using the action
-
-Example setup: https://github.com/reload/workflow-platformsh-deploy-status/blob/main/.github/workflows/platformsh-deploy-test.yml
