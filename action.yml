@@ -58,9 +58,10 @@ runs:
         TRIES=0
 
         while [ $TRIES -le 100 ]; do \
-          ACTS=$(~/.platformsh/bin/platform activities --columns=state --incomplete --no-header --format=plain --no-interaction --exclude-type=${{ inputs.DEPLOYMENT_TYPE_EXCLUDES }}); \
+          ACTS=$(~/.platformsh/bin/platform activities --columns=state --incomplete --no-header --format=plain --no-interaction --exclude-type=${{ inputs.DEPLOYMENT_TYPE_EXCLUDES }} 2>&1); \
 
-          if [ "$?" -ne 0 ]; then break; fi; \
+
+          if [[ "$ACTS" == "No activities found" ]]; then break; fi; \
 
           echo ""; \
           echo "Current deploy state(s):"; \
