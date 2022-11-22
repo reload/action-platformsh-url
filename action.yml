@@ -55,13 +55,14 @@ runs:
         echo "${{ inputs.ENVIRONMENT_NAME }}"
 
         TRIES=0
+        SUCCESS=0
 
         while [ $TRIES -le 100 ]; do \
           TRIES=$((TRIES+1)); \
           ACTS=$(~/.platformsh/bin/platform activities --columns=state --incomplete --no-header --format=plain --no-interaction --exclude-type=${{ inputs.DEPLOYMENT_TYPE_EXCLUDES }} 2>&1); \
 
 
-          if [[ "$ACTS" == "No activities found" ]]; then break; fi; \
+          if [[ "$ACTS" == "No activities found" ]]; then SUCCESS=1; break; fi; \
 
           echo ""; \
           echo "Current deploy state(s):"; \
@@ -70,14 +71,13 @@ runs:
           sleep 5; \
         done \
 
-        STATUS=$(~/.platformsh/bin/platform env:info status)
+        STATUS=$(~/.platformsh/bin/platform env:info status 2>&1)
 
-        if [ "$?" -ne 0 ]; then \
-          echo "PlatformSH reports a problem with the environment. The message:"; \
-          ENV_STATUS=$(~/.platformsh/bin/platform env:info); \
-          echo "$ENV_STATUS" exit 2; \
-        elif [ $STATUS == *"inactive"* ]; then \
+        if [ $STATUS == *"inactive"* ]; then \
           echo "PlatformSH reports that the environment is not active. This might be because you have run out of available environment slots. Try to run 'platform env:activate -e ${{ inputs.ENVIRONMENT_NAME }} -p ${{ inputs.PLATFORMSH_ID }}'"; \
+          exit 2; \
+        elif [[ SUCCESS == 0 ]]
+          echo "$STATUS"; \
           exit 2; \
         fi
 
