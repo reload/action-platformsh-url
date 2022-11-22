@@ -54,10 +54,10 @@ runs:
         curl -fsS https://platform.sh/cli/installer | php
         echo "${{ inputs.ENVIRONMENT_NAME }}"
 
-        SUCCESS=0
         TRIES=0
 
         while [ $TRIES -le 100 ]; do \
+          TRIES=$((TRIES+1)); \
           ACTS=$(~/.platformsh/bin/platform activities --columns=state --incomplete --no-header --format=plain --no-interaction --exclude-type=${{ inputs.DEPLOYMENT_TYPE_EXCLUDES }} 2>&1); \
 
 
