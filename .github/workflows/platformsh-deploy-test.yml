@@ -1,0 +1,50 @@
+name: "Testing action-platformsh-url"
+
+on: pull_request
+permissions: write-all
+
+jobs:
+  ok-test:
+    name: "Testing on a branch that has an active environment"
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v2
+
+      - uses: ./
+        with:
+          PLATFORMSH_ID: ${{ secrets.TEST_PLATFORMSH_ID }}
+          PLATFORMSH_KEY: ${{ secrets.TEST_PLATFORMSH_KEY }}
+          ENVIRONMENT_NAME: main
+
+  missing-test:
+    name: "Testing on a branch that does not exist"
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v2
+
+      - uses: ./
+        continue-on-error: true
+        with:
+          PLATFORMSH_ID: ${{ secrets.TEST_PLATFORMSH_ID }}
+          PLATFORMSH_KEY: ${{ secrets.TEST_PLATFORMSH_KEY }}
+          ENVIRONMENT_NAME: nonexistent
+
+      - name: Check for failure
+        if: ${{ failure() }}
+        run: echo 'The step failed, which is expected.'; exit 0
+
+  inactive-test:
+    name: "Testing on a branch that used to exist"
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v2
+
+      - uses: ./
+        continue-on-error: true
+        with:
+          PLATFORMSH_ID: ${{ secrets.TEST_PLATFORMSH_ID }}
+          PLATFORMSH_KEY: ${{ secrets.TEST_PLATFORMSH_KEY }}
+          ENVIRONMENT_NAME: inactive
+      - name: Check for failure
+        if: ${{ failure() }}
+        run: echo 'The step failed, which is expected.'; exit 0
