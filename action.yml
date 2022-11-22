@@ -76,7 +76,7 @@ runs:
         if [ $STATUS == *"inactive"* ]; then \
           echo "PlatformSH reports that the environment is not active. This might be because you have run out of available environment slots. Try to run 'platform env:activate -e ${{ inputs.ENVIRONMENT_NAME }} -p ${{ inputs.PLATFORMSH_ID }}'"; \
           exit 2; \
-        elif [[ SUCCESS == 0 ]]
+        elif [[ SUCCESS == 0 ]]; then \
           echo "$STATUS"; \
           exit 2; \
         fi
