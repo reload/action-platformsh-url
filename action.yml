@@ -24,8 +24,14 @@ inputs:
   DEPLOYMENT_TYPE_EXCLUDES:
     description: "Types of deployments NOT to wait for. Default: environment.cron - See types here: https://docs.platform.sh/integrations/activity/reference.html#type"
     default: "environment.cron"
-    required: true
+    required: false
     type: string
+
+  DEPLOY_WAIT_TIME:
+    description: "How long should we maximum wait for the deploy to work? If the branch doesnt exist in the PlatformSH GIT Remote, this is how long the action will take. Actually inactive environments get detected instantly. Default: 500 seconds."
+    default: 500
+    required: false
+    type: integer
 
 outputs:
   url:
@@ -57,7 +63,11 @@ runs:
         TRIES=0
         SUCCESS=0
 
-        while [ $TRIES -le 100 ]; do \
+        DELAY_BETWEEN_ATTEMPTS=5;
+        MAX_SECONDS=${{ inputs.DEPLOY_WAIT_TIME }};
+        MAX_TRIES=$(( MAX_SECONDS / DELAY_BETWEEN_ATTEMPTS ));
+
+        while [ $TRIES -le $MAX_TRIES ]; do \
           TRIES=$((TRIES+1)); \
           ACTS=$(~/.platformsh/bin/platform activities --columns=state --incomplete --no-header --format=plain --no-interaction --exclude-type=${{ inputs.DEPLOYMENT_TYPE_EXCLUDES }} 2>&1); \
 
@@ -68,7 +78,7 @@ runs:
           echo "Current deploy state(s):"; \
           echo "$ACTS"; \
 
-          sleep 5; \
+          sleep $DELAY_BETWEEN_ATTEMPTS; \
         done \
 
         STATUS=$(~/.platformsh/bin/platform env:info status 2>&1)
