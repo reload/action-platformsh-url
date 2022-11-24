@@ -102,6 +102,6 @@ runs:
           exit 2; \
         fi
 
-        echo "::set-output name=url::$(echo $URL)"
+        echo "url=$URL" >> $GITHUB_OUTPUT
 
         echo "$URL is active - you can use it as $ {{ [..].outputs.url }}"; \
