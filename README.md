@@ -18,5 +18,5 @@ Detecting if PlatformSH is building an environment, and returning the URL when i
 
 This action is used for another action, for detecting if a platformsh environment has deployed correctly.
 
-https://github.com/reload/action-platformsh-deploy-status
+https://github.com/rasben/action-platformsh-deploy-status
 
