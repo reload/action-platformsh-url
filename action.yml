@@ -28,8 +28,8 @@ inputs:
     type: string
 
   DEPLOY_WAIT_TIME:
-    description: "How long should we maximum wait for the deploy to work? If the branch doesnt exist in the PlatformSH GIT Remote, this is how long the action will take. Actually inactive environments get detected instantly. Default: 500 seconds."
-    default: 500
+    description: "How many seconds should we maximum wait for the deploy to work? If the branch doesnt exist in the PlatformSH GIT Remote, this is how long the action will take. Actually inactive environments get detected instantly. Default: 1000 seconds."
+    default: 1000
     required: false
     type: integer
 
