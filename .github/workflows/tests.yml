@@ -16,6 +16,7 @@ jobs:
           PLATFORMSH_ID: ${{ secrets.TEST_PLATFORMSH_ID }}
           PLATFORMSH_KEY: ${{ secrets.TEST_PLATFORMSH_KEY }}
           ENVIRONMENT_NAME: main
+          ALLOW_CANCEL_CRON: 1
 
   missing-test:
     name: "Testing on a branch that does not exist"
