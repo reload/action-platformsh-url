@@ -71,17 +71,7 @@ runs:
         CRON_ID=$(~/.platformsh/bin/platform activity:list --incomplete --format=plain --columns=ID --type=environment.cron --no-interaction --no-header --limit=1)
 
         if [[ "${{ inputs.ALLOW_CANCEL_CRON }}" == 1 ]] && [[ ! "$CRON_ID" == "No activities found" ]]; then \
-            ~/.platformsh/bin/platform activity:cancel "$CRON_ID";
-        fi
-
-        if [[ "${{ inputs.ALLOW_CANCEL_CRON }}" == 1 ]]; then \
-          CRON_ID=$(~/.platformsh/bin/platform activity:list --incomplete --format=plain --columns=ID --type=environment.cron --no-interaction --no-header --limit=1)
-          if [[ ! "$CRON_ID" == "No activities found" ]]; then \
-            ~/.platformsh/bin/platform activity:cancel "$CRON_ID" \
-          fi; \
-
-          echo "$STATUS"; \
-          exit 2; \
+            ~/.platformsh/bin/platform activity:cancel "$CRON_ID"; \
         fi
 
         TRIES=0
