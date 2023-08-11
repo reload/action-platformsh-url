@@ -14,6 +14,8 @@ Detecting if PlatformSH is building an environment, and returning the URL when i
 	- By default, this is set to the `pr-xx`, using `pr-${{ github.event.pull_request.number }}`
 	- You can also set it to check for the current branch, using `${{ github.head_ref || github.ref_name }}`
 
+See the other inputs in [action.yml](action.yml)
+
 ## See also
 
 This action is used for another action, for detecting if a platformsh environment has deployed correctly.

@@ -15,6 +15,12 @@ inputs:
     required: true
     type: string
 
+  ALLOW_CANCEL_CRON:
+    description: "Can we cancel on-going crons, to speed up deployment? default: 0"
+    default: 0
+    required: false
+    type: integer
+
   ENVIRONMENT_NAME:
     description: "Which environment to check against - defaults to pr-NUMBER"
     default: "pr-${{ github.event.pull_request.number }}"
@@ -52,6 +58,9 @@ runs:
       run: |
         set +e
 
+        echo "Giving psh a chance to detect the git update.."
+        sleep 1m
+
         export PLATFORMSH_CLI_NO_INTERACTION=1;
         export PLATFORM_PROJECT=${{ inputs.PLATFORMSH_ID }};
         export PLATFORM_BRANCH=${{ inputs.ENVIRONMENT_NAME }};
@@ -59,6 +68,16 @@ runs:
 
         curl -fsS https://platform.sh/cli/installer | php
         echo "${{ inputs.ENVIRONMENT_NAME }}"
+
+        if [[ "${{ inputs.ALLOW_CANCEL_CRON }}" == 1 ]]; then \
+          CRON_ID=$(~/.platformsh/bin/platform activity:list --incomplete --format=plain --columns=ID --type=environment.cron --no-interaction --no-header --limit=1)
+          if [[ ! "$CRON_ID" == "No activities found" ]]; then \
+            ~/.platformsh/bin/platform activity:cancel "$CRON_ID" \
+          fi; \
+
+          echo "$STATUS"; \
+          exit 2; \
+        fi
 
         TRIES=0
         SUCCESS=0
