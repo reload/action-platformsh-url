@@ -51,7 +51,7 @@ runs:
       uses: shivammathur/setup-php@v2
       with:
         php-version: "8.1"
-        extensions: none, curl, json, mbstring, pcre, and phar
+        extensions: none, curl, json, mbstring, pcre, phar
     - name: Get PlatformSH URL
       shell: bash
       id: platformsh_url
