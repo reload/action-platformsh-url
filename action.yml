@@ -59,7 +59,7 @@ runs:
         set +e
 
         echo "Giving psh a chance to detect the git update.."
-        sleep 45s
+        sleep 10s
 
         export PLATFORMSH_CLI_NO_INTERACTION=1;
         export PLATFORM_PROJECT=${{ inputs.PLATFORMSH_ID }};
