@@ -34,7 +34,7 @@ jobs:
           DEPLOY_WAIT_TIME: 10
 
       - name: Check for failure
-        if: ${{ steps.missing_url.outputs.url }}
+        if: ${{ steps.missing_url.outcome != 'failure' }}
         uses: actions/github-script@v3
         with:
           script: |
@@ -56,7 +56,7 @@ jobs:
           DEPLOY_WAIT_TIME: 30
 
       - name: Check for failure
-        if: ${{ steps.inactive_url.outputs.url }}
+        if: ${{ steps.inactive_url.outcome != 'failure' }}
         uses: actions/github-script@v3
         with:
           script: |
