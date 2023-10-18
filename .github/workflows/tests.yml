@@ -15,7 +15,7 @@ jobs:
         with:
           PLATFORMSH_ID: ${{ secrets.TEST_PLATFORMSH_ID }}
           PLATFORMSH_KEY: ${{ secrets.TEST_PLATFORMSH_KEY }}
-          ENVIRONMENT_NAME: main
+          ENVIRONMENT_NAME: master
           ALLOW_CANCEL_CRON: 1
 
   missing-test:
@@ -34,7 +34,7 @@ jobs:
           DEPLOY_WAIT_TIME: 10
 
       - name: Check for failure
-        if: ${{ steps.inactive_url.outputs.url }}
+        if: ${{ steps.missing_url.outputs.url }}
         uses: actions/github-script@v3
         with:
           script: |
@@ -52,7 +52,7 @@ jobs:
         with:
           PLATFORMSH_ID: ${{ secrets.TEST_PLATFORMSH_ID }}
           PLATFORMSH_KEY: ${{ secrets.TEST_PLATFORMSH_KEY }}
-          ENVIRONMENT_NAME: inactive
+          ENVIRONMENT_NAME: pr-462
           DEPLOY_WAIT_TIME: 30
 
       - name: Check for failure
