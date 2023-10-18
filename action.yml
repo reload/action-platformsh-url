@@ -34,8 +34,8 @@ inputs:
     type: string
 
   PSH_DETECTION_WAIT:
-    description: "How long should we maximum wait for PSH to detect the push? If the branch doesnt exist in the PlatformSH GIT Remote, this is how long the action will take. Actually inactive environments get detected instantly. Default: 120 seconds."
-    default: 120
+    description: "How long should we maximum wait for PSH to detect the push? If the branch doesnt exist in the PlatformSH GIT Remote, this is how long the action will take. Actually inactive environments get detected instantly. Default: 60 seconds."
+    default: 60
     required: false
     type: integer
 
@@ -72,23 +72,26 @@ runs:
             ~/.platformsh/bin/platform activity:cancel --type=environment.cron --all; \
         fi
 
-        TRIES=0
+        DETECTION_TRIES=0
+        TOTAL_TRIES=0
         SUCCESS=0
 
         DELAY_BETWEEN_ATTEMPTS=5;
-        MAX_SECONDS=${{ inputs.PSH_DETECTION_WAIT }};
-        MAX_TRIES=$(( MAX_SECONDS / DELAY_BETWEEN_ATTEMPTS ));
+        MAX_DETECTION_SECONDS=${{ inputs.PSH_DETECTION_WAIT }};
+        MAX_DETECTION_TRIES=$(( MAX_DETECTION_SECONDS / DELAY_BETWEEN_ATTEMPTS ));
+        MAX_TRIES=$(( 600 / DELAY_BETWEEN_ATTEMPTS ));
 
-        while [ $TRIES -le $MAX_TRIES ]; do \
-          TRIES=$((TRIES+1)); \
-          ACTS=$(~/.platformsh/bin/platform activities --columns=state --incomplete --no-header --format=plain --no-interaction --type=${{ inputs.ACTIVITY_TYPES }} 2>&1 || true); \
-          if [[ "$ACTS" =~ "Specified environment not found" ]]; then break; fi; \
-          if [[ "$ACTS" =~ "Exception]" ]]; then break; fi; \
+        while [ $DETECTION_TRIES -le $MAX_DETECTION_TRIES ] && [ $TOTAL_TRIES -le $MAX_TRIES ]; do \
+          DETECTION_TRIES=$((DETECTION_TRIES+1)); \
+          TOTAL_TRIES=$((TOTAL_TRIES+1)); \
+          ACTS=$(~/.platformsh/bin/platform activities --columns=id,state --incomplete --no-header --no-interaction --type=${{ inputs.ACTIVITY_TYPES }} 2>&1 || true); \
+          if [[ "$ACTS" =~ "pending" || "$ACTS" =~ "in progress" ]]; then TOTAL_TRIES=0; fi; \
           if [[ "$ACTS" =~ "No activities found" ]]; then SUCCESS=1; break; fi; \
 
           echo ""; \
           echo "Current deploy state(s):"; \
           echo "$ACTS"; \
+          echo "-----------------"; \
 
           sleep $DELAY_BETWEEN_ATTEMPTS; \
         done \
