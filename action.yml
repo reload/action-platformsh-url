@@ -58,8 +58,7 @@ runs:
       run: |
         set +e
 
-        echo "Giving psh a chance to detect the git update.."
-        sleep 10s
+        sleep 5s
 
         export PLATFORMSH_CLI_NO_INTERACTION=1;
         export PLATFORM_PROJECT=${{ inputs.PLATFORMSH_ID }};
@@ -73,28 +72,41 @@ runs:
         fi
 
         DETECTION_TRIES=0
-        TOTAL_TRIES=0
+        TRIES=0
         SUCCESS=0
 
         DELAY_BETWEEN_ATTEMPTS=5;
         MAX_DETECTION_SECONDS=${{ inputs.PSH_DETECTION_WAIT }};
         MAX_DETECTION_TRIES=$(( MAX_DETECTION_SECONDS / DELAY_BETWEEN_ATTEMPTS ));
-        MAX_TRIES=$(( 600 / DELAY_BETWEEN_ATTEMPTS ));
+        MAX_WAIT_SECONDS=900;
+        echo "We will wait for a maximum of $MAX_DETECTION_SECONDS secs for PSH to detect a deploy, and a max of $MAX_WAIT_SECONDS secs for the deployment to finish."
+        MAX_TRIES=$(( 900 / DELAY_BETWEEN_ATTEMPTS ));
 
-        while [ $DETECTION_TRIES -le $MAX_DETECTION_TRIES ] && [ $TOTAL_TRIES -le $MAX_TRIES ]; do \
+        echo "We will now detect the PSH activities. You can view the deployment log using";
+        echo "  platform activity:log [ID] -p ${{ inputs.PLATFORMSH_ID }} -e ${{ inputs.ENVIRONMENT_NAME }}";
+        echo "----------------------";
+        echo "";
+
+        while [ $DETECTION_TRIES -le $MAX_DETECTION_TRIES ] && [ $TRIES -le $MAX_TRIES ]; do \
           DETECTION_TRIES=$((DETECTION_TRIES+1)); \
-          TOTAL_TRIES=$((TOTAL_TRIES+1)); \
-          ACTS=$(~/.platformsh/bin/platform activities --columns=id,state --incomplete --no-header --no-interaction --type=${{ inputs.ACTIVITY_TYPES }} 2>&1 || true); \
-          if [[ "$ACTS" =~ "pending" || "$ACTS" =~ "in progress" ]]; then TOTAL_TRIES=0; fi; \
+          TRIES=$((TRIES+1)); \
+          ACTS=$(~/.platformsh/bin/platform activities --format=plain --columns=id,state --incomplete --no-header --no-interaction --type=${{ inputs.ACTIVITY_TYPES }} 2>&1 || true); \
+          if [[ "$ACTS" =~ "pending" || "$ACTS" =~ "in progress" ]]; then \
+            DETECTION_TRIES=0; \
+          else \
+            echo "detect tries: $DETECTION_TRIES / $MAX_DETECTION_TRIES"; \
+          fi; \
+
           if [[ "$ACTS" =~ "No activities found" ]]; then SUCCESS=1; break; fi; \
 
-          echo ""; \
-          echo "Current deploy state(s):"; \
+          echo "total  tries: $TRIES / $MAX_TRIES"; \
+
           echo "$ACTS"; \
-          echo "-----------------"; \
+          echo "----------------------"; \
 
           sleep $DELAY_BETWEEN_ATTEMPTS; \
-        done \
+        done
+        echo ""
 
         STATUS=$(~/.platformsh/bin/platform env:info status 2>&1 || true)
 
@@ -111,7 +123,7 @@ runs:
         CURL_HTTP_STATUS=$(curl -L -s -o /dev/null -w "%{http_code}" $URL)
 
         if [[ "$CURL_HTTP_STATUS" != "200" ]]; then \
-          echo "PlatformSH reports the environment is ready, but cURL could not connect to it."; \
+          echo "PlatformSH reports the environment is ready, but cURL could not connect to it. You may have pushed a broken build."; \
           echo "URL: $URL"; \
           echo "HTTP Status Code: $CURL_HTTP_STATUS"; \
           exit 2; \
