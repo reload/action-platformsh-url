@@ -35,7 +35,7 @@ inputs:
 
   PSH_DETECTION_WAIT:
     description: "How long should we maximum wait for PSH to detect the push? If the branch doesnt exist in the PlatformSH GIT Remote, this is how long the action will take. Actually inactive environments get detected instantly. Default: 60 seconds."
-    default: 60
+    default: 120
     required: false
     type: integer
 
@@ -76,36 +76,32 @@ runs:
         SUCCESS=0
 
         DELAY_BETWEEN_ATTEMPTS=5;
-        MAX_DETECTION_SECONDS=${{ inputs.PSH_DETECTION_WAIT }};
-        MAX_DETECTION_TRIES=$(( MAX_DETECTION_SECONDS / DELAY_BETWEEN_ATTEMPTS ));
+        DETECTION_SECONDS=${{ inputs.PSH_DETECTION_WAIT }};
         MAX_WAIT_SECONDS=900;
-        echo "We will wait for a maximum of $MAX_DETECTION_SECONDS secs for PSH to detect a deploy, and a max of $MAX_WAIT_SECONDS secs for the deployment to finish."
-        MAX_TRIES=$(( 900 / DELAY_BETWEEN_ATTEMPTS ));
+        echo "We will wait $DETECTION_SECONDS secs for PSH to detect a deploy, and a max of $MAX_WAIT_SECONDS secs for any deployment to finish."
+        sleep $DETECTION_SECONDS;
+
+        MAX_TRIES=$(( MAX_WAIT_SECONDS / DELAY_BETWEEN_ATTEMPTS ));
 
         echo "We will now detect the PSH activities. You can view the deployment log using";
         echo "  platform activity:log [ID] -p ${{ inputs.PLATFORMSH_ID }} -e ${{ inputs.ENVIRONMENT_NAME }}";
         echo "----------------------";
         echo "";
 
-        while [ $DETECTION_TRIES -le $MAX_DETECTION_TRIES ] && [ $TRIES -le $MAX_TRIES ]; do \
-          DETECTION_TRIES=$((DETECTION_TRIES+1)); \
+        while [ $TRIES -le $MAX_TRIES ]; do \
           TRIES=$((TRIES+1)); \
           ACTS=$(~/.platformsh/bin/platform activities --format=plain --columns=id,state --incomplete --no-header --no-interaction --type=${{ inputs.ACTIVITY_TYPES }} 2>&1 || true); \
-          if [[ "$ACTS" =~ "pending" || "$ACTS" =~ "in progress" ]]; then \
-            DETECTION_TRIES=0; \
-          else \
-            echo "detect tries: $DETECTION_TRIES / $MAX_DETECTION_TRIES"; \
-          fi; \
 
+          echo "$ACTS"; \
+          echo "----------------------"; \
+          if [[ "$ACTS" =~ "Exception]" ]]; then SUCCESS=0; break; fi; \
           if [[ "$ACTS" =~ "No activities found" ]]; then SUCCESS=1; break; fi; \
 
           echo "total  tries: $TRIES / $MAX_TRIES"; \
 
-          echo "$ACTS"; \
-          echo "----------------------"; \
-
           sleep $DELAY_BETWEEN_ATTEMPTS; \
         done
+
         echo ""
 
         STATUS=$(~/.platformsh/bin/platform env:info status 2>&1 || true)
