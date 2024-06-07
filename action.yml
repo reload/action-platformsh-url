@@ -47,11 +47,6 @@ outputs:
 runs:
   using: "composite"
   steps:
-    - name: Setup PHP and disable opcache
-      uses: shivammathur/setup-php@v2
-      with:
-        php-version: "8.1"
-        extensions: none, curl, json, mbstring, pcre, phar
     - name: Get PlatformSH URL
       shell: bash
       id: platformsh_url
@@ -65,7 +60,7 @@ runs:
         export PLATFORM_BRANCH=${{ inputs.ENVIRONMENT_NAME }};
         export PLATFORMSH_CLI_TOKEN=${{ inputs.PLATFORMSH_KEY }};
 
-        curl -fsS https://platform.sh/cli/installer | php
+        curl -fsSL https://raw.githubusercontent.com/platformsh/cli/main/installer.sh | bash
 
         if [[ "${{ inputs.ALLOW_CANCEL_CRON }}" == 1 ]]; then \
             ~/.platformsh/bin/platform activity:cancel --type=environment.cron; \
