@@ -31,7 +31,7 @@ jobs:
           PLATFORMSH_ID: ${{ secrets.TEST_PLATFORMSH_ID }}
           PLATFORMSH_KEY: ${{ secrets.TEST_PLATFORMSH_KEY }}
           ENVIRONMENT_NAME: nonexistent
-          DEPLOY_WAIT_TIME: 10
+          PSH_DETECTION_WAIT: 10
 
       - name: Check for failure
         if: ${{ steps.missing_url.outcome != 'failure' }}
@@ -53,7 +53,7 @@ jobs:
           PLATFORMSH_ID: ${{ secrets.TEST_PLATFORMSH_ID }}
           PLATFORMSH_KEY: ${{ secrets.TEST_PLATFORMSH_KEY }}
           ENVIRONMENT_NAME: pr-462
-          DEPLOY_WAIT_TIME: 30
+          PSH_DETECTION_WAIT: 30
 
       - name: Check for failure
         if: ${{ steps.inactive_url.outcome != 'failure' }}
