@@ -8,7 +8,7 @@ jobs:
     name: "Testing on a branch that has an active environment"
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v2
+      - uses: actions/checkout@v4
 
       - uses: ./
         id: active_url
@@ -22,7 +22,7 @@ jobs:
     name: "Testing on a branch that does not exist"
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v2
+      - uses: actions/checkout@v4
 
       - uses: ./
         id: missing_url
@@ -35,7 +35,7 @@ jobs:
 
       - name: Check for failure
         if: ${{ steps.missing_url.outcome != 'failure' }}
-        uses: actions/github-script@v3
+        uses: actions/github-script@v7
         with:
           script: |
             core.setFailed('The test did not fail as expected.')
@@ -44,7 +44,7 @@ jobs:
     name: "Testing on a branch that used to exist"
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v2
+      - uses: actions/checkout@v4
 
       - uses: ./
         id: inactive_url
@@ -57,7 +57,7 @@ jobs:
 
       - name: Check for failure
         if: ${{ steps.inactive_url.outcome != 'failure' }}
-        uses: actions/github-script@v3
+        uses: actions/github-script@v7
         with:
           script: |
             core.setFailed('The test did not fail as expected.')
