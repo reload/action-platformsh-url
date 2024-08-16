@@ -1,3 +1,4 @@
+---
 name: "Platform.sh - Get Environment URL"
 description: "Detecting if PlatformSH is building an environment, and returning the URL when it's done deploying."
 branding:

@@ -1,6 +1,6 @@
 ---
+name: Lint
 on: pull_request
-name: GitHub Actions
 
 # Detect if this action is already running, and cancel it.
 # This most likely happened because a second push has been made to a branch.
@@ -19,3 +19,12 @@ jobs:
     steps:
       - uses: actions/checkout@v4
       - uses: reviewdog/action-actionlint@v1
+  yamllint:
+    name: Yamllint
+    runs-on: ubuntu-22.04
+    steps:
+      - uses: actions/checkout@v4
+      - name: Run Yamllint
+        uses: frenck/action-yamllint@v1.5.0
+        with:
+          strict: true

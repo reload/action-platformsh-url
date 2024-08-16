@@ -1,3 +1,4 @@
+---
 name: "Testing action-platformsh-url"
 
 on: pull_request
