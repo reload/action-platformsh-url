@@ -90,7 +90,7 @@ runs:
 
         while [ $TRIES -le $MAX_TRIES ]; do \
           TRIES=$((TRIES+1)); \
-          ACTS=$(~/.platformsh/bin/platform activities --format=plain --columns=id,state --incomplete --no-header --no-interaction --type=${{ inputs.ACTIVITY_TYPES }} 2>&1 || true); \
+          ACTS=$(~/.platformsh/bin/platform activities --format=plain --columns=id,state --incomplete --no-header --no-interaction --type=${{ inputs.ACTIVITY_TYPES }} -vvv 2>&1 || true); \
 
           echo "$ACTS"; \
           echo "----------------------"; \
