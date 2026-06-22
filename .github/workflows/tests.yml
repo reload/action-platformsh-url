@@ -9,7 +9,7 @@ jobs:
     name: "Testing on a branch that has an active environment"
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v6
+      - uses: actions/checkout@v7
 
       - uses: ./
         id: active_url
@@ -23,7 +23,7 @@ jobs:
     name: "Testing on a branch that does not exist"
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v6
+      - uses: actions/checkout@v7
 
       - uses: ./
         id: missing_url
@@ -45,7 +45,7 @@ jobs:
     name: "Testing on a branch that used to exist"
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v6
+      - uses: actions/checkout@v7
 
       - uses: ./
         id: inactive_url
